@@ -1,0 +1,29 @@
+name: '2_1'
+source code: |-
+  input: '001122'
+  blank: ' '
+  start state: cutbegin
+  table:
+    cutbegin:
+      ' ' : {L: done}
+      '*'   : {write: ' ', R}
+      0   : {write: ' ', R: mark1}
+    mark1:
+      [0, '*']   : R
+      1   : {write: '*', R: goend}
+    goend:
+      [1, 2]   : R
+      ' ' : {L: cutend}
+    cutend:
+      2   : {write: ' ', L: gobegin}
+    gobegin:
+      [0, 1, 2, '*']   : L
+      ' ' : {R: cutbegin}
+    done:
+positions:
+  cutbegin: {x: 140.31, y: 212.21}
+  mark1: {x: 357.94, y: 214.53}
+  goend: {x: 545.88, y: 211.22}
+  cutend: {x: 550.71, y: 338.72}
+  gobegin: {x: 145.88, y: 343.52}
+  done: {x: 139.16, y: 70.36}

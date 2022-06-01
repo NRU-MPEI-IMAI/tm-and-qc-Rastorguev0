@@ -1,197 +1,281 @@
 \documentclass{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T2A]{fontenc}
-\usepackage[utf8]{inputenc}
+
 \usepackage[russian]{babel}
-\usepackage[margin=3cm]{geometry}
-\usepackage{paralist}
-\usepackage{amsthm, amsmath, amsfonts, amssymb}
-\usepackage{mathtools} % \mathclap
-\usepackage{bm}
-\usepackage{dsfont}
-\usepackage{hyperref}
 \usepackage{graphicx}
-\usepackage{multirow}
-\usepackage{comment}
-\usepackage{xcolor, colortbl}
-\usepackage{xifthen, xspace}
-\usepackage{caption, subcaption}
-\usepackage{lscape}
+\usepackage[unicode, pdftex, urlcolor=blue]{hyperref}
+\usepackage[left=3cm, right=3cm]{geometry}
+\usepackage{amsfonts}
+\usepackage{verbatim}
 \usepackage{braket}
-\usepackage{epigraph}
-\usepackage{sectsty}
-\usepackage{listings}
 
-\hypersetup{
-    colorlinks=true,
-    linkcolor=blue,
-    filecolor=magenta,      
-    urlcolor=blue,
-    pdftitle={Overleaf Example},
-    pdfpagemode=FullScreen,
-    }
-
-\title{Теоретические модели вычислений \\
-ДЗ №3: Машины Тьюринга и квантовые вычисления}
-
-\date{1 мая 2022 года}
+\title{\textbf{Теоретические модели вычислений \\ ДЗ №3: Машины Тьюринга и квантовые вычисления}}
+\author{Расторгуев Александр, А-13а-19}
 
 \begin{document}
-
 \maketitle
 
-\section{Введение}
-
-Для того, чтобы работа была принята, требуется соблюдать ряд условий:
-
-\begin{enumerate}
-    \item Текст решения домашней работы должен быть подготовлен в одном из следующих форматов: \href{https://www.latex-project.org/}{\LaTeX}, \href{https://en.wikipedia.org/wiki/Markdown}{Markdown}, \href{https://asciidoc-py.github.io/index.html}{AsciiDOC}
-    \item Дополнительно должен быть приложен PDF файл
-    \item Для набора рекомендуется использовать сервисы типа \href{https://www.overleaf.com}{Overleaf}
-    \item Работу можно выполнить на английском языке
-    \item Иллюстрации, должны быть описаны на декларативном языке \href{https://graphviz.org/}{Graphviz} или \href{https://mermaid-js.github.io/mermaid/#/}{Mermaid}. В сам документ можно вставить отрендеренную картинку.
-    \item За каждое задание можно получить определённое количество количество баллов, указанное рядом с заданием
-    \item Мягкий дедлайн -- 20 дней (12:00 20 мая 2022 года), после него $-30\%$ к оценке
-    \item Для зачёта надо набрать $60\%$ от максимальной оценки
-    \item Максимальное количество баллов: 10.
-    \item Работа должна быть выложена на \href{https://github.com/}{GitHub}, в репозитории, созданном к ней
-\end{enumerate}
-
 \section{Машины Тьюринга}
-
-Работу требуется выполнять в системе \url{turingmachine.io}. \\\\
-Для сдачи заданий 1-2 требуется прикрепить файлы YAML с исходным кодом проекта. Каждый файлы должен иметь наименование задание\_пункт.yml, к примеру 1\_1.yml для первой задачи первого задания. \\\\
-
 \subsection{Операции с числами}
-
-Реализуйте машины Тьюринга, которые позволяют выполнять следующие операции:
 \begin{enumerate}
-    \item Сложение двух унарных чисел (1 балла)
-    \item Умножение унарных чисел (1 балл)
+    \item Сложение двух унарных чисел
+    \begin{verbatim}
+        input: '11+1111'
+        blank: ' '
+        start state: lhs
+        table:
+          lhs:
+            1   : R
+            +   : {R: rhs}
+          rhs:
+            ' ' : {L: cut}
+            1   : {write: +, L}
+            +   : {write: 1, R: lhs}
+          cut:
+            +   : {write: ' ', L: done}
+          done:
+    \end{verbatim}
+    \item Умножение двух унарных чисел
+    \begin{verbatim}
+        input: '*1'
+        blank: ' '
+        start state: start
+        table:
+          start:
+            '*' : {L: go_result_end}
+            1   : {write: l, R: go_rhs}
+          go_rhs:
+            [1, l]   : R
+            '*' : {R: go_rhs_one}
+          go_rhs_one:
+            r   : R
+            ' ' : {L: go_lhs}
+            1   : {write: r, L: drag_one}
+          drag_one:
+            [r, '*', l, 1] : L
+            ' '   : {write: 1, R: go_rhs}
+          go_lhs:
+            r   : {write: 1, L}
+            '*' : {L: go_lhs_one}
+          go_lhs_one:
+            1   : L
+            l   : {R: start}
+          go_result_end:
+            l   : L
+            [1, ' '] : {R: clean_right}
+          clean_right:
+            [l, '*', 1] : {write: ' ', R}
+            ' ' : {L: end}
+          end:
+    \end{verbatim}
 \end{enumerate}
-
-
 \subsection{Операции с языками и символами}
-
-Реализуйте машины Тьюринга, которые позволяют выполнять следующие операции:
 \begin{enumerate}
-    \item Принадлежность к языку $L = \{ 0^n1^n2^n \}, n \ge 0$ (0.5 балла)
-    \item Проверка соблюдения правильности скобок в строке (минимум 3 вида скобок) (0.5 балла)
-    \item Поиск минимального по длине слова в строке (слова состоят из символов 1 и 0 и разделены пробелом) (1 балл)
+    \item Принадлежность к языку $L = \{0^n1^n2^n, \; n \geq 0\}$\\ Если слово принадлежит языку, лента останется пустой.
+    \begin{verbatim}
+        input: '001122'
+        blank: ' '
+        start state: cutbegin
+        table:
+          cutbegin:
+            ' ' : {L: done}
+            '*'   : {write: ' ', R}
+            0   : {write: ' ', R: mark1}
+          mark1:
+            [0, '*']   : R
+            1   : {write: '*', R: goend}
+          goend:
+            [1, 2]   : R
+            ' ' : {L: cutend}
+          cutend:
+            2   : {write: ' ', L: gobegin}
+          gobegin:
+            [0, 1, 2, '*']   : L
+            ' ' : {R: cutbegin}
+          done:
+    \end{verbatim}
+    \item Проверка соблюдения правильности скобок в строке (минимум 3 вида скобок)\\ Если скобки расставлены правильно, лента останется пустой.
+    \begin{verbatim}
+        input: '{}[](({}{}{}))'
+        blank: ' '
+        start state: go_any_rp
+        table:
+          go_any_rp:
+            ['(', '[', '{', '*'] : R
+            ')' : {write: '*', L: go_lp}
+            ']' : {write: '*', L: go_slp}
+            '}' : {write: '*', L: go_flp}
+            ' ' : {L: clear}
+          go_lp:
+            '*' : L
+            '(' : {write: '*', R: go_any_rp}
+          go_slp:
+            '*' : L
+            '[' : {write: '*', R: go_any_rp}
+          go_flp:
+            '*' : L
+            '{' : {write: '*', R: go_any_rp}
+          clear:
+            '*' : {write: ' ', L}
+            ' ' : {L: end}
+          end:
+    \end{verbatim}
+    \item Поиск минимального по длине слова в строке (слова состоят из символов 0, 1 и разделены пробелом)\\ Сравниваются первые 2 слова строки. Если первое меньше второго, второе слово стирается, первое передвигается на его место. Если второе слово меньше первого, первое слово стирается. Процесс повторяется, пока не останется одно наименьшее слово строки.
+    \begin{verbatim}
+        input: '1010 0 01 1111'
+        blank: ' '
+        start state: mark_l
+        table:
+          mark_l:
+            [o, l] : R
+            0   : {write: o, R: go_fspace}
+            1   : {write: l, R: go_fspace}
+            ' ' : {R: rclear} # delete rhs, recover lhs
+          go_fspace:
+            ' ' : {R: check_space}
+            [1, 0] : R
+          check_space:
+            ' ': {L: go_left_and_recover}
+            [o, l, 0, 1] : {L: go_one_right_and_mark_r} # delete rhs, recover lhs
+          go_one_right_and_mark_r:
+            ' ': {R: mark_r}
+          mark_r:
+            [o, l] : R
+            0   : {write: o, L: go_bspace}
+            1   : {write: l, L: go_bspace}
+            ' ' : {L: rrecover} # delete lhs, recover rhs
+          go_bspace:
+            [o, l] : L
+            ' ': {L: go_lbegin}
+          go_lbegin:
+            [0, 1] : L
+            [o, l] : {R: mark_l}
+
+          rrecover:
+            o   : {write: 0, L}
+            l   : {write: 1, L}
+            ' ' : {L: lclear}
+          lclear:
+            [0, 1, o, l] : {write: ' ', L}
+            ' ' : {R: go_right}
+          go_right:
+            ' ' : R
+            [0, 1] : {L: go_one_right}
+          go_one_right:
+            ' ' : {R: mark_l}
+          rclear:
+            [0, 1, o, l] : {write: ' ', R}
+            ' ' : {R: check_space2}
+          check_space2:
+            ' ': {L: go_left_and_recover}
+            [o, l, 0, 1] : {L: go_left}
+          go_left_and_recover:
+            ' ' : L
+            [o, l, 0, 1] : {R: sedfsfsesgdgdg}
+          sedfsfsesgdgdg:
+            ' ' : {L: recover_lhs_end}
+          recover_lhs_end:
+            [0, 1] : L
+            o : {write: 0, L}
+            l : {write: 1, L}
+            ' ' : {R: end}
+          go_left:
+            ' ' : L
+            [0, 1, o, l] : {L: go_mark_begin}
+          go_mark_begin:
+            [o, l, 0, 1] : L
+            ' ' : {write: '*', R: go_lhs_end}
+          go_lhs_end:
+            [o, l, 0, 1] : R
+            ' ' : {L: copy_lhs}
+          copy_lhs:
+            [o, 0] : {write: ' ', R: begin_drag_0}
+            [l, 1] : {write: ' ', R: begin_drag_1}
+          begin_drag_0:
+            ' ' : R
+            [0, 1] : {L: go_one_left_and_write_0}
+          go_one_left_and_write_0:
+            ' ' : {L: lwrite_0}
+          lwrite_0:
+            ' ' : {write: 0, L: continue_copy}
+            #'*' : {write: ' ', R: go_restart}
+          go_restart:
+            ' ' : R
+            [0, 1] : {L: go_one_right_and_restart}
+          go_one_right_and_restart:
+            ' ' : {R: mark_l}
+          continue_copy:
+            ' ' : L
+            [o, 0] : {write: ' ', R: drag_0}
+            [l, 1] : {write: ' ', R: drag_1}
+            '*' : {write: ' ', R: go_restart}
+          drag_0:
+            ' ' : R
+            [0, 1] : {L: lwrite_0}
+          begin_drag_1:
+            ' ' : R
+            [0, 1] : {L: go_one_left_and_write_1}
+          go_one_left_and_write_1:
+            ' ' : {L: lwrite_1}
+          lwrite_1:
+            ' ' : {write: 1, L: continue_copy}
+            #'*' : {write: ' ', R: go_restart}
+          drag_1:
+            ' ' : R
+            [0, 1] : {L: lwrite_1}
+          end:
+    \end{verbatim}
 \end{enumerate}
-
-
 \section{Квантовые вычисления}
+\subsection{Генерация суперпозиций}
+Дано $N$ кубитов ($1 \le N \le 8$) в нулевом состоянии $\ket{0\dots0}$. Также дана некоторая последовательность битов, которое задаёт ненулевое базисное состояние размера $N$. Задача получить суперпозицию нулевого состояния и заданного.
 
-Для выполнения заданий по квантовым вычислениям требуется QDK. Его можно скачать здесь: \url{https://docs.microsoft.com/en-us/azure/quantum/install-overview-qdk}. 
-\\\\
-Но можно использовать любой пакет, типа \url{https://qiskit.org/}. 
-\\\\
-В качестве решения задачи надо предоставить схему алгоритма для частного случая при фиксированном количестве кубитов и фиксированных состояниях. 
-
-
-\subsection{Генерация суперпозиций 1 (1 балл)}
-
-Дано $N$ кубитов ($1 \le N \le 8$) в нулевом состоянии $\Ket{0\dots0}$. Также дана некоторая последовательность битов, которое задаёт ненулевое базисное состояние размера $N$. Задача получить суперпозицию нулевого состояния и заданного.
-
-$$\Ket{S} = \frac{1}{\sqrt2}(\Ket{0\dots0} +\Ket{\psi})$$
+$$\ket{S} = \frac{1}{\sqrt2}(\ket{0\dots0} +\ket{\psi})$$
 
 То есть требуется реализовать операцию, которая принимает на вход:
 
 \begin{enumerate}
     \item Массив кубитов $q_s$
-    \item Массив битов $bits$ описывающих некоторое состояние $\Ket{\psi}$. Это массив имеет тот же самый размер, что и $qs$. Первый элемент этого массива равен $1$.
+    \item Массив битов $bits$ описывающих некоторое состояние $\ket{\psi}$. Это массив имеет тот же самый размер, что и $qs$. Первый элемент этого массива равен $1$.
 \end{enumerate}
+\textbf{Решение}\\По условию задачи первый квант в векторах будет различаться. Применим к нему оператор Адамара, выбирем его в качестве управляющего кубита для гейта $CNOT$, который применим к управляемым кубитам - единичным кубитам вектора $\psi$.
 
-
-Заготовка для кода:
-\begin{lstlisting}
-namespace Solution {
-        open Microsoft.Quantum.Primitive;
-        open Microsoft.Quantum.Canon;
-        operation Solve (qs : Qubit[], bits : Bool[]) : ()
-        {
-            body
-            {
-
+\begin{verbatim}
+    operation Solve (qs : Qubit[], bits : Bool[]) : Unit
+    {
+        H(qs[0]);
+        for i in 1 .. Length(qs)-1 {
+            if (bits[i]) {
+                CNOT(qs[0], qs[i]);
             }
         }
-}
-\end{lstlisting}
-
-
-\subsection{Различение состояний 1 (1 балл)}
-
+    }
+\end{verbatim}
+\subsection{Различение состояний 1}
 Дано $N$ кубитов ($1 \le N \le 8$), которые могут быть в одном из двух состояний:
 
-$$\Ket{GHZ} = \frac{1}{\sqrt2}(\Ket{0\dots0} +\Ket{1\dots1})$$
-$$\Ket{W} = \frac{1}{\sqrt N}(\Ket{10\dots00}+\Ket{01\dots00} + \dots +\Ket{00\dots01})$$
+$$\ket{GHZ} = \frac{1}{\sqrt2}(\ket{0\dots0} +\ket{1\dots1})$$
+$$\ket{W} = \frac{1}{\sqrt N}(\ket{10\dots00}+\ket{01\dots00} + \dots +\ket{00\dots01})$$
 
-Требуется выполнить необходимые преобразования, чтобы точно различить эти два состояния. Возвращать $0$, если первое состояние и 1, если второе. 
-\\\\
-Заготовка для кода:
-\begin{lstlisting}
-namespace Solution {
-        open Microsoft.Quantum.Primitive;
-        open Microsoft.Quantum.Canon;
-        operation Solve (qs : Qubit[]) : Int
-        {
-            body
-            {
-
-                return 
+Требуется выполнить необходимые преобразования, чтобы точно различить эти два состояния. Возвращать $0$, если первое состояние и 1, если второе.\\\\
+\textbf{Решение}\\Для определения состояния измерим кубиты. Если система находилась в состоянии $\ket{GHZ}$, при измерении получим $N$ нулей, либо $N$ единиц. Если система находилась в состоянии $W$, получим одну единицу и $N-1$ нулей. Поэтому при $N > 1$ самого факта измерения будет достаточно для различения состояний. При $N = 1$ мы могли бы применить матрицу поворота для повышения точности различения состояния системы, однако это не даст точности в $100\%$.\\
+Код для $N > 1$:
+\begin{verbatim}
+    operation Solve (qs : Qubit[]) : Int
+    {
+        mutable ones = 0;
+        for i in 0 .. Length(qs)-1 {
+            if(M(qs[i]) == One) {
+                set ones += 1;
             }
         }
-}
-\end{lstlisting}
-
-
-\subsection{Различение состояний 2 (2 балла)}
-
-Дано $2$ кубита, которые могут быть в одном из двух состояний:
-
-$$\Ket{S_0} = \frac{1}{2}(\Ket{00} + \Ket{01} + \Ket{10} + \Ket{11})$$
-$$\Ket{S_1} = \frac{1}{2}(\Ket{00} - \Ket{01} + \Ket{10} - \Ket{11})$$
-$$\Ket{S_2} = \frac{1}{2}(\Ket{00} + \Ket{01} - \Ket{10} - \Ket{11})$$
-$$\Ket{S_3} = \frac{1}{2}(\Ket{00} - \Ket{01} - \Ket{10} + \Ket{11})$$
-
-
-Требуется выполнить необходимые преобразования, чтобы точно различить эти четыре состояния. Возвращать требуется индекс состояния (от $0$ до $3$). 
-\\\\
-Заготовка для кода:
-\begin{lstlisting}
-namespace Solution {
-        open Microsoft.Quantum.Primitive;
-        open Microsoft.Quantum.Canon;
-        operation Solve (qs : Qubit[]) : Int
-        {
-            body
-            {
-
-                return 
-            }
+        if (ones == Length(qs) or ones == 0) {
+            return 0;
         }
-}
-\end{lstlisting}
-
-
-\subsection{Написание оракула 1 (2 балла)}
-
-Требуется реализовать квантовый оракул на $N$ кубитах ($1 \le N \le 8$), который реализует следующую функцию: $f(\pmb{x}) = (\pmb{b}\pmb{x}) \mod 2$, где  $\pmb{b} \in \{0,1\}^N$ вектор битов и  $\pmb{x}$ вектор кубитов. Выход функции записать в кубит $\pmb{y}$. Количество кубитов $N$ ($1 \le N \le 8$). 
-\\\\
-Заготовка для кода:
-\begin{lstlisting}
-namespace Solution {
-        open Microsoft.Quantum.Primitive;
-        open Microsoft.Quantum.Canon;
-        operation Solve (x : Qubit[], y : Qubit, b : Int[]) : ()
-        {
-            body
-            {
-
-            }
+        else {
+            return 1;
         }
-}
-\end{lstlisting}
+    }
+\end{verbatim}
+
 
 \end{document}

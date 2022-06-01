@@ -1,0 +1,137 @@
+name: '2_3'
+source code: |
+  input: '1010 0 01 1111'
+  blank: ' '
+  start state: mark_l
+  table:
+    mark_l:
+      [o, l] : R
+      0   : {write: o, R: go_fspace}
+      1   : {write: l, R: go_fspace}
+      ' ' : {R: rclear} # delete rhs, recover lhs
+    go_fspace:
+      ' ' : {R: check_space}
+      [1, 0] : R
+    check_space:
+      ' ': {L: go_left_and_recover}
+      [o, l, 0, 1] : {L: go_one_right_and_mark_r} # delete rhs, recover lhs
+    go_one_right_and_mark_r:
+      ' ': {R: mark_r}
+    mark_r:
+      [o, l] : R
+      0   : {write: o, L: go_bspace}
+      1   : {write: l, L: go_bspace}
+      ' ' : {L: rrecover} # delete lhs, recover rhs
+    go_bspace:
+      [o, l] : L
+      ' ': {L: go_lbegin}
+    go_lbegin:
+      [0, 1] : L
+      [o, l] : {R: mark_l}
+    
+    rrecover:
+      o   : {write: 0, L}
+      l   : {write: 1, L}
+      ' ' : {L: lclear}
+    lclear:
+      [0, 1, o, l] : {write: ' ', L}
+      ' ' : {R: go_right}
+    go_right:
+      ' ' : R
+      [0, 1] : {L: go_one_right}
+    go_one_right:
+      ' ' : {R: mark_l}
+    rclear:
+      [0, 1, o, l] : {write: ' ', R}
+      ' ' : {R: check_space2}
+    check_space2:
+      ' ': {L: go_left_and_recover}
+      [o, l, 0, 1] : {L: go_left}
+    go_left_and_recover:
+      ' ' : L
+      [o, l, 0, 1] : {R: sedfsfsesgdgdg}
+    sedfsfsesgdgdg:
+      ' ' : {L: recover_lhs_end}
+    recover_lhs_end:
+      [0, 1] : L
+      o : {write: 0, L}
+      l : {write: 1, L}
+      ' ' : {R: end}
+    go_left:
+      ' ' : L
+      [0, 1, o, l] : {L: go_mark_begin}
+    go_mark_begin:
+      [o, l, 0, 1] : L
+      ' ' : {write: '*', R: go_lhs_end}
+    go_lhs_end:
+      [o, l, 0, 1] : R
+      ' ' : {L: copy_lhs}
+    copy_lhs:
+      [o, 0] : {write: ' ', R: begin_drag_0}
+      [l, 1] : {write: ' ', R: begin_drag_1}
+    begin_drag_0:
+      ' ' : R
+      [0, 1] : {L: go_one_left_and_write_0}
+    go_one_left_and_write_0:
+      ' ' : {L: lwrite_0}
+    lwrite_0:
+      ' ' : {write: 0, L: continue_copy}
+      #'*' : {write: ' ', R: go_restart}
+    go_restart:
+      ' ' : R
+      [0, 1] : {L: go_one_right_and_restart}
+    go_one_right_and_restart:
+      ' ' : {R: mark_l}
+    continue_copy:
+      ' ' : L
+      [o, 0] : {write: ' ', R: drag_0}
+      [l, 1] : {write: ' ', R: drag_1}
+      '*' : {write: ' ', R: go_restart}
+    drag_0:
+      ' ' : R
+      [0, 1] : {L: lwrite_0}
+    begin_drag_1:
+      ' ' : R
+      [0, 1] : {L: go_one_left_and_write_1}
+    go_one_left_and_write_1:
+      ' ' : {L: lwrite_1}
+    lwrite_1:
+      ' ' : {write: 1, L: continue_copy}
+      #'*' : {write: ' ', R: go_restart}
+    drag_1:
+      ' ' : R
+      [0, 1] : {L: lwrite_1}
+    end:
+positions:
+  mark_l: {x: 303.69, y: 342.69, fixed: false}
+  go_fspace: {x: 220.18, y: 217.36, fixed: false}
+  check_space: {x: 172.86, y: 72.75, fixed: false}
+  go_one_right_and_mark_r: {x: 73.96, y: 173.04, fixed: false}
+  mark_r: {x: 71.91, y: 322.7, fixed: false}
+  go_bspace: {x: 98.18, y: 480, fixed: false}
+  go_lbegin: {x: 245.5, y: 480, fixed: false}
+  rrecover: {x: 20, y: 173.43, fixed: false}
+  lclear: {x: 20, y: 308.54, fixed: false}
+  go_right: {x: 33.15, y: 445.66}
+  go_one_right: {x: 180.1, y: 427.96, fixed: false}
+  rclear: {x: 396.71, y: 215.56, fixed: false}
+  check_space2: {x: 459.92, y: 64.32, fixed: false}
+  go_left_and_recover: {x: 314.24, y: 20, fixed: false}
+  sedfsfsesgdgdg: {x: 195.95, y: 20, fixed: false}
+  recover_lhs_end: {x: 365.2, y: 20, fixed: false}
+  go_left: {x: 607.81, y: 20, fixed: false}
+  go_mark_begin: {x: 776.67, y: 20, fixed: false}
+  go_lhs_end: {x: 654.9, y: 20, fixed: false}
+  copy_lhs: {x: 721.85, y: 153.01, fixed: false}
+  begin_drag_0: {x: 780, y: 299.37, fixed: false}
+  go_one_left_and_write_0: {x: 780, y: 183.8, fixed: false}
+  lwrite_0: {x: 737.08, y: 348.47, fixed: false}
+  go_restart: {x: 517.28, y: 480, fixed: false}
+  go_one_right_and_restart: {x: 367.7, y: 480, fixed: false}
+  continue_copy: {x: 661, y: 480, fixed: false}
+  drag_0: {x: 780, y: 480, fixed: false}
+  begin_drag_1: {x: 589.2, y: 204.42, fixed: false}
+  go_one_left_and_write_1: {x: 531.8, y: 340.82, fixed: false}
+  lwrite_1: {x: 471.58, y: 480, fixed: false}
+  drag_1: {x: 566.7, y: 480, fixed: false}
+  end: {x: 325.79, y: 125.93}

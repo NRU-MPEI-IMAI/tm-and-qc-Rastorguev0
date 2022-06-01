@@ -1,0 +1,42 @@
+name: '1_2'
+source code: |
+  input: '*1'
+  blank: ' '
+  start state: start
+  table:
+    start:
+      '*' : {L: go_result_end}
+      1   : {write: l, R: go_rhs}
+    go_rhs:
+      [1, l]   : R
+      '*' : {R: go_rhs_one}
+    go_rhs_one:
+      r   : R
+      ' ' : {L: go_lhs}
+      1   : {write: r, L: drag_one}
+    drag_one:
+      [r, '*', l, 1] : L
+      ' '   : {write: 1, R: go_rhs}
+    go_lhs:
+      r   : {write: 1, L}
+      '*' : {L: go_lhs_one}
+    go_lhs_one:
+      1   : L
+      l   : {R: start}
+    go_result_end:
+      l   : L
+      [1, ' '] : {R: clean_right}
+    clean_right:
+      [l, '*', 1] : {write: ' ', R}
+      ' ' : {L: end}
+    end:
+positions:
+  start: {x: 111.58, y: 209.46}
+  go_rhs: {x: 376.06, y: 209.22}
+  go_rhs_one: {x: 482.97, y: 361.48}
+  drag_one: {x: 602.26, y: 208.67}
+  go_lhs: {x: 273.48, y: 451.38}
+  go_lhs_one: {x: 121.7, y: 368.19}
+  go_result_end: {x: 254.83, y: 71.87}
+  clean_right: {x: 417.33, y: 67.68}
+  end: {x: 594.75, y: 59.45}

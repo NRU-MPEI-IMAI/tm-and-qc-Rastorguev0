@@ -1,0 +1,22 @@
+name: '1_1'
+source code: |-
+  # Unary sum.
+  input: '11+1111'
+  blank: ' '
+  start state: lhs
+  table:
+    lhs:
+      1   : R
+      +   : {R: rhs}
+    rhs:
+      ' ' : {L: cut}
+      1   : {write: +, L}
+      +   : {write: 1, R: lhs}
+    cut:
+      +   : {write: ' ', L: done}
+    done:
+positions:
+  lhs: {x: 139.9, y: 149.2}
+  rhs: {x: 401.23, y: 150.44}
+  cut: {x: 402.26, y: 289.21}
+  done: {x: 531.49, y: 286.36}
